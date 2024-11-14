@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Contact
@@ -25,3 +25,15 @@ def get_contact(request, number):
 
     serializer = ContactSerializer(contact)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ContactViewSet(viewsets.ModelViewSet):
+    serializer_class = ContactSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Contact.objects.all()
+
+    def get_queryset(self):
+        return Contact.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
